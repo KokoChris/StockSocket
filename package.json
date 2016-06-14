@@ -1,0 +1,16 @@
+{
+  "name": "stockchart",
+  "version": "1.0.0",
+  "description": "track stocks with websocket",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "kokoc",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.4.2",
+    "express": "^4.13.4",
+    "request": "^2.72.0"
+  }
+}
