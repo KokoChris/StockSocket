@@ -1,16 +1,24 @@
 <html>
   <head>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
+   
+  </head>
+  <body>
+    
+    <div id="curve_chart" style="width: 900px; height: 500px"></div>
+   <script type="text/javascript">
+
       google.charts.load('current', {'packages':['corechart']});
       google.charts.setOnLoadCallback(drawChart);
  
 
-
+        let symbols = <%- symbols %> ;
+        console.log(symbols);
 
       function drawChart() {
+        
         var data = google.visualization.arrayToDataTable([
-          ['Date', 'CloseValue','Papa' ],
+          symbols,
           ['1',  98.83 , 59  ],
           ['2',  98.83 , 65 ],
           ['3',  97.2  , 80],
@@ -28,8 +36,6 @@
         chart.draw(data, options);
       }
     </script>
-  </head>
-  <body>
-    <div id="curve_chart" style="width: 900px; height: 500px"></div>
   </body>
+
 </html>
