@@ -16,7 +16,7 @@ app.get('/', (req,res) => {
 var parameters =  {
 
 	 Normalized: false,
-	 NumberOfDays: 5,
+	 NumberOfDays: 30,
 	 Symbol: 'AAPL',
 	 DataPeriod: 'Day',
 	 Elements: [
@@ -32,19 +32,29 @@ var parameters =  {
 var parameters = encodeURIComponent(JSON.stringify(parameters));
 
 var url =`http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
-console.log(url);
 
-console.log(parameters)
 
 app.get ('/test' , (req,res) => {
+	
 	request( url, (error, data ,body ) => {
   			
   			if ( !error && data.statusCode === 200) {
 
   				let parsedData = JSON.parse(body);
-	  		    console.log(parsedData);
-	  			res.send('hey')
+	  		  
+	  			res.render('index', {data:parsedData});
+                 let dates = parsedData.Dates;
+               
+                 let symbols =  parsedData.Elements.map( (element) => {
+                 	
+                 	return  element.Symbol;
+                 })
 
+                 
+
+
+
+	  			 console.log(symbols);
   			} else {
   				res.send(error);
   			}
