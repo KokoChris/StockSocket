@@ -24,7 +24,7 @@ var parameters = {
         "Symbol": "AAPL",
         "Type": "price",
         "Params": ["c"]
-    },{
+    }, {
         "Symbol": "FB",
         "Type": "price",
         "Params": ["c"]
@@ -44,28 +44,23 @@ app.get('/test', (req, res) => {
         if (!error && data.statusCode === 200) {
 
             let parsedData = JSON.parse(body);
-
-            let dates = parsedData.Dates;
-
-            let sanitizedDates = dates.map((date) =>{
-            	return m(date,'YYYY-MM-DDTHH:mm:ss').format("MMMM DD YYYY");
-            });
-            console.log(sanitizedDates);
-
-            let symbols = parsedData.Elements.map((element) => {
-                
-                return element.Symbol;
-            })
-
             
-            symbols.unshift("Date");
+
+            let symbolsRow  =  createSymbolsRow(parsedData);
+            let datesColumn =  createDatesColumn(parsedData);
+            let stockValues =  extractStockValues(parsedData.Elements);
+
+            let chartTable = addValuesToDates(datesColumn,stockValues);
             
-            res.render('index', { data: parsedData , symbols: JSON.stringify(symbols)});
+            chartTable.unshift(symbolsRow);
+
+     
+
+            res.render('index', { data: parsedData , chartTable: JSON.stringify(chartTable)});
+            // res.send(chartTable);
 
 
 
-
-            console.log(symbols);
         } else {
             res.send(error);
         }
@@ -77,4 +72,67 @@ app.get('/test', (req, res) => {
 
 app.listen(port, () => {
     console.log('Server is running on port ' + port)
-})
+});
+
+
+
+
+function createSymbolsRow (parsedApiData) {
+    
+    let elements = parsedApiData.Elements;
+
+    let symbolNames = elements.map((element)=> {
+            return element.Symbol;
+        });
+        //prefix 'Date' to symbols Array
+    symbolNames.unshift('Date');
+
+    return symbolNames;
+
+}
+
+function createDatesColumn(parsedApiData) {
+
+    let dates = parsedApiData.Dates;
+    let formattedDates = sanitizeDates(dates);
+    let datesColumn = formattedDates.map((date) => {
+        return [date];
+    })
+    return datesColumn;
+
+}
+
+function sanitizeDates(dates) {
+
+    let sanitizedDates = dates.map((date) => {
+        return m(date, 'YYYY-MM-DDTHH:mm:ss').format("MMMM DD YYYY");
+    });
+    return sanitizedDates;
+
+}
+
+
+
+function extractStockValues (elements) {
+
+	let values = elements.map((element) => {
+		console.log(element);
+		 return element.DataSeries.close.values;
+	});
+
+	return values;
+}
+
+
+function addValuesToDates (dates, values) {
+	//dates is an array of arrays.In each array index 0 is a date, we want to push values to dates
+
+	values.forEach((value) => {
+		
+		for (let i = 0; i < value.length; i ++ ){
+			dates[i].push(value[i]);
+		}
+	})
+
+	return dates;
+}
