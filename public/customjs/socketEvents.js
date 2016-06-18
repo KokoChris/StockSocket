@@ -20,16 +20,18 @@ $('form').submit(function() {
 
 socket.on('addSymbol', data => {
 
-    
-   
     var newItem = data.symbols.slice(-1)
-    console.log(newItem)
-
-
+    
     var tags = $('.tags');
+    var tag = $('.tag');
+    console.log(tag);
+    console.log(data.symbols);
+    if (tag.length !== data.symbols.length){
+        tags.append(`<span class="tag btn btn-small btn-primary">${newItem}</span>`)  
 
-    tags.append(`<span class="tag btn btn-small btn-primary">${newItem}</span>`)
-
+    }
+    
+    
 
     chartTable = (JSON.parse(data.chart));
     drawChart();

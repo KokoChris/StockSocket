@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
     let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
 
     request(url, (error, data, body) => {
-        console.log(symbols);
+       
 
         if (!error && data.statusCode === 200) {
 
@@ -55,7 +55,14 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     socket.on('add symbol', symb => {
-        symbols = symb;
+        // console.log(symb.slice(-1))
+        // console.log(symbols)
+        // console.log(symbols.indexOf(symb.slice(-1).toString()))
+
+        if (symbols.indexOf(symb.slice(-1).toString()) === -1){
+            symbols = symb;
+        }
+        
         parameters = new h.Parameters(symbols);
         parameters = encodeURIComponent(JSON.stringify(parameters));
 
