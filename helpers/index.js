@@ -38,7 +38,6 @@ function sanitizeDates(dates) {
 function extractStockValues(elements) {
 
     let values = elements.map((element) => {
-        console.log(element);
         return element.DataSeries.close.values;
     });
 
@@ -59,10 +58,52 @@ function addValuesToDates(dates, values) {
     return dates;
 }
 
+
+function createChartTable(parsedData) {
+    let symbolsRow = createSymbolsRow(parsedData);
+    let datesColumn = createDatesColumn(parsedData);
+    let stockValues = extractStockValues(parsedData.Elements);
+    let chartTable = addValuesToDates(datesColumn, stockValues);
+
+    chartTable.unshift(symbolsRow); //add header of table
+    return chartTable;
+}
+
+
+
+function Parameters(symbolArray) {
+    let Normalized = false;
+    let NumberOfDays = 30;
+    let DataPeriod = 'Day';
+
+    this.symbols = symbolArray;
+
+    let Elements = this.symbols.map((symbol) => {
+        return {
+            "Symbol": symbol,
+            "Type": "price",
+            "Params": ["c"]
+        }
+    })
+
+    return {
+        Normalized,
+        NumberOfDays,
+        DataPeriod,
+        Elements
+    }
+
+
+
+}
+
+
 module.exports = {
     createDatesColumn,
     createSymbolsRow,
     extractStockValues,
     sanitizeDates,
-    addValuesToDates
+    addValuesToDates,
+    Parameters,
+    createChartTable
 }

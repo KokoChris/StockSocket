@@ -4,66 +4,47 @@ const express = require('express');
 const app = express();
 const request = require('request');
 const port = process.env.PORT || 3000;
-// const m = require('moment');
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 const h = require('./helpers');
+
+var parameters = app.locals.parameters;
+var symbols = app.locals.symbols;
+app.use(express.static('public'));
 
 app.set('view engine', 'ejs');
 
 
 app.get('/', (req, res) => {
-    res.render('index');
-})
 
+    if (!symbols) {
+        symbols = ["AAPL", "FB"];
+        parameters = new h.Parameters(symbols);
+        parameters = encodeURIComponent(JSON.stringify(parameters));
 
+    } else {
 
-
-app.get('/test', (req, res) => {
-
-    let parameters = {
-
-        Normalized: false,
-        NumberOfDays: 30,
-        Symbol: 'AAPL',
-        DataPeriod: 'Day',
-        Elements: [{
-            "Symbol": "AAPL",
-            "Type": "price",
-            "Params": ["c"]
-        }, {
-            "Symbol": "FB",
-            "Type": "price",
-            "Params": ["c"]
-        }, {
-            "Symbol": "IBM",
-            "Type": "price",
-            "Params": ["c"]
-        }]
-
+        parameters = new h.Parameters(symbols);
+        parameters = encodeURIComponent(JSON.stringify(parameters));
 
     }
-    parameters = encodeURIComponent(JSON.stringify(parameters));
+
 
     let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
 
-
     request(url, (error, data, body) => {
+        console.log(symbols);
 
         if (!error && data.statusCode === 200) {
 
             let parsedData = JSON.parse(body);
 
+            let chartTable = h.createChartTable(parsedData);
 
-            let symbolsRow = h.createSymbolsRow(parsedData);
-            let datesColumn = h.createDatesColumn(parsedData);
-            let stockValues = h.extractStockValues(parsedData.Elements);
-            let chartTable = h.addValuesToDates(datesColumn, stockValues);
-
-            chartTable.unshift(symbolsRow); //add header of table
-
-            res.render('index', { data: parsedData, chartTable: JSON.stringify(chartTable) });
+            res.render('index', { data: parsedData, chartTable: JSON.stringify(chartTable), symbols: symbols });
 
         } else {
-            res.send(error);
+            console.log(data.statusCode);
         }
 
 
@@ -71,6 +52,86 @@ app.get('/test', (req, res) => {
     });
 })
 
-app.listen(port, () => {
+
+io.on('connection', (socket) => {
+    socket.on('add symbol', symb => {
+        symbols = symb;
+        parameters = new h.Parameters(symbols);
+        parameters = encodeURIComponent(JSON.stringify(parameters));
+
+        let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
+
+
+        request(url, (error, data, body) => {
+
+            if (!error && data.statusCode === 200) {
+
+                let parsedData = JSON.parse(body);
+                let chartTable = h.createChartTable(parsedData);
+                socket.broadcast.emit('addSymbol',{
+                    chart:JSON.stringify(chartTable),
+                    symbols: symbols
+                } );
+                
+                socket.emit('addSymbol', {
+                    chart:JSON.stringify(chartTable),
+                    symbols: symbols
+                });
+
+
+            } else {
+
+
+                symbols.splice(-1, 1); //remove the last symbol that caused the request to fail
+                console.log(data.statusCode);
+            }
+        })
+
+    });
+    socket.on('removeSymbol', symbolToRemove => {
+
+        symbols.splice(symbols.indexOf(symbolToRemove), 1);
+        parameters = new h.Parameters(symbols);
+        parameters = encodeURIComponent(JSON.stringify(parameters));
+
+        let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
+
+
+        request(url, (error, data, body) => {
+
+            if (!error && data.statusCode === 200) {
+
+                let parsedData = JSON.parse(body);
+                let chartTable = h.createChartTable(parsedData);
+                socket.broadcast.emit('removeSymbol', {
+
+                    chart:JSON.stringify(chartTable),
+                    symbolToRemove: symbolToRemove
+
+
+                    });
+                socket.emit('removeSymbol', {
+
+                    chart:JSON.stringify(chartTable),
+                    symbolToRemove: symbolToRemove
+
+
+                    })
+
+
+            } else {
+
+
+                // symbols.splice(-1, 1); //remove the last symbol that caused the request to fail
+                console.log(data.statusCode);
+            }
+        })
+
+
+    })
+});
+
+
+http.listen(port, () => {
     console.log('Server is running on port ' + port)
 });

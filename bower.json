@@ -1,0 +1,20 @@
+{
+  "name": "stockchart",
+  "description": "track stocks with websocket",
+  "main": "app.js",
+  "authors": [
+    "kokoc"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/KokoChris/StockSocket",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6"
+  }
+}
