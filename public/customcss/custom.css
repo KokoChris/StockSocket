@@ -4,8 +4,8 @@
 	height:400px;
 }
 .tags {
-
-	height:300px;
+	float:left;
+	height:150px;
 	padding-top:50px;
 	padding-bottom:50px;
 }
@@ -16,3 +16,9 @@
 	width: 80px
 }
 
+.list-group{
+	padding-top : 70px;
+}
+.demoPar {
+	padding-top :70px;
+}

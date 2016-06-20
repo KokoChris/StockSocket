@@ -55,10 +55,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     socket.on('add symbol', symb => {
-        // console.log(symb.slice(-1))
-        // console.log(symbols)
-        // console.log(symbols.indexOf(symb.slice(-1).toString()))
-
+       
         if (symbols.indexOf(symb.slice(-1).toString()) === -1) {
             symbols = symb;
         }
@@ -132,8 +129,7 @@ io.on('connection', (socket) => {
 
                 } else {
 
-
-                    // symbols.splice(-1, 1); //remove the last symbol that caused the request to fail
+                   
                     console.log(data.statusCode);
                 }
             })
