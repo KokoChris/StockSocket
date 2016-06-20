@@ -24,8 +24,6 @@ socket.on('addSymbol', data => {
     
     var tags = $('.tags');
     var tag = $('.tag');
-    console.log(tag);
-    console.log(data.symbols);
     if (tag.length !== data.symbols.length){
         tags.append(`<span class="tag btn btn-small btn-primary">${newItem}</span>`)  
 
@@ -48,7 +46,13 @@ socket.on('removeSymbol', data => {
     let symbolToRemove = data.symbolToRemove;
     $(`.tag:contains("${symbolToRemove}")`).remove();
     
-
-    chartTable = (JSON.parse(data.chart));
-    drawChart();
+    if (data.chart) {
+      chartTable = (JSON.parse(data.chart));
+      drawChart();
+    
+    } else {
+      console.log('yo')
+      chartTable = [['Date']];
+      drawChart();
+    }
 })

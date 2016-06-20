@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
     let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
 
     request(url, (error, data, body) => {
-       
+
 
         if (!error && data.statusCode === 200) {
 
@@ -59,10 +59,10 @@ io.on('connection', (socket) => {
         // console.log(symbols)
         // console.log(symbols.indexOf(symb.slice(-1).toString()))
 
-        if (symbols.indexOf(symb.slice(-1).toString()) === -1){
+        if (symbols.indexOf(symb.slice(-1).toString()) === -1) {
             symbols = symb;
         }
-        
+
         parameters = new h.Parameters(symbols);
         parameters = encodeURIComponent(JSON.stringify(parameters));
 
@@ -75,13 +75,13 @@ io.on('connection', (socket) => {
 
                 let parsedData = JSON.parse(body);
                 let chartTable = h.createChartTable(parsedData);
-                socket.broadcast.emit('addSymbol',{
-                    chart:JSON.stringify(chartTable),
+                socket.broadcast.emit('addSymbol', {
+                    chart: JSON.stringify(chartTable),
                     symbols: symbols
-                } );
-                
+                });
+
                 socket.emit('addSymbol', {
-                    chart:JSON.stringify(chartTable),
+                    chart: JSON.stringify(chartTable),
                     symbols: symbols
                 });
 
@@ -98,44 +98,58 @@ io.on('connection', (socket) => {
     socket.on('removeSymbol', symbolToRemove => {
 
         symbols.splice(symbols.indexOf(symbolToRemove), 1);
-        parameters = new h.Parameters(symbols);
-        parameters = encodeURIComponent(JSON.stringify(parameters));
-
-        let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
+        if (symbols.length > 0) {
+            console.log('hello from request')
 
 
-        request(url, (error, data, body) => {
+            parameters = new h.Parameters(symbols);
+            parameters = encodeURIComponent(JSON.stringify(parameters));
 
-            if (!error && data.statusCode === 200) {
+            let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
 
-                let parsedData = JSON.parse(body);
-                let chartTable = h.createChartTable(parsedData);
-                socket.broadcast.emit('removeSymbol', {
 
-                    chart:JSON.stringify(chartTable),
-                    symbolToRemove: symbolToRemove
+            request(url, (error, data, body) => {
+
+                if (!error && data.statusCode === 200) {
+
+                    let parsedData = JSON.parse(body);
+                    let chartTable = h.createChartTable(parsedData);
+                    socket.broadcast.emit('removeSymbol', {
+
+                        chart: JSON.stringify(chartTable),
+                        symbolToRemove: symbolToRemove
 
 
                     });
-                socket.emit('removeSymbol', {
+                    socket.emit('removeSymbol', {
 
-                    chart:JSON.stringify(chartTable),
-                    symbolToRemove: symbolToRemove
+                        chart: JSON.stringify(chartTable),
+                        symbolToRemove: symbolToRemove
 
 
                     })
 
 
-            } else {
+                } else {
 
 
-                // symbols.splice(-1, 1); //remove the last symbol that caused the request to fail
-                console.log(data.statusCode);
-            }
-        })
+                    // symbols.splice(-1, 1); //remove the last symbol that caused the request to fail
+                    console.log(data.statusCode);
+                }
+            })
+        } else {
+            socket.emit('removeSymbol' , {
+                chart:undefined,
+                symbolToRemove: symbolToRemove
+            })
+            socket.broadcast.emit('removeSymbol', {
+                chart:undefined,
+                symbolToRemove: symbolToRemove
+            })
+        }
 
 
-    })
+    });
 });
 
 
