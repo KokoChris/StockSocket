@@ -1,4 +1,7 @@
+'use strict';
+
 const m = require('moment');
+
 
 function createSymbolsRow(parsedApiData) {
 
