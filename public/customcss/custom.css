@@ -8,6 +8,7 @@
 	height:150px;
 	padding-top:50px;
 	padding-bottom:50px;
+	margin-bottom:50px;
 }
 .tag {
 	
@@ -21,4 +22,7 @@
 }
 .demoPar {
 	padding-top :70px;
+}
+.chartTracker {
+	margin-top:20px;
 }
