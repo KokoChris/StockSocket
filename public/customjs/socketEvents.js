@@ -6,7 +6,6 @@ $('form').submit(function() {
     var symbols = chartTable[0].map(function(symbol) {
         return symbol;
     });
-
     symbols.push(newSymbol);
     symbols.shift();
     socket.emit('add symbol', symbols);
@@ -28,8 +27,6 @@ socket.on('addSymbol', data => {
         tags.append(`<span class="tag btn btn-small btn-primary">${newItem}</span>`)  
 
     }
-    
-    
 
     chartTable = (JSON.parse(data.chart));
     drawChart();
@@ -37,7 +34,6 @@ socket.on('addSymbol', data => {
 
 $('.tags').on('click','.tag', function() {
     let symbolToRemove = $(this).text()
-
     socket.emit('removeSymbol', symbolToRemove)
    
 })
@@ -51,7 +47,6 @@ socket.on('removeSymbol', data => {
       drawChart();
     
     } else {
-      console.log('yo')
       chartTable = [['Date']];
       drawChart();
     }

@@ -16,46 +16,47 @@ app.set('view engine', 'ejs');
 
 
 app.get('/', (req, res) => {
+    if (!symbols || symbols.length === 0) {
+    
 
-    if (!symbols) {
-        symbols = ["AAPL", "FB"];
-        parameters = new h.Parameters(symbols);
-        parameters = encodeURIComponent(JSON.stringify(parameters));
+        symbols = [];
+      
+        res.render('index', { data: undefined, chartTable: JSON.stringify([["Date"]]), symbols: symbols });
+
 
     } else {
 
         parameters = new h.Parameters(symbols);
         parameters = encodeURIComponent(JSON.stringify(parameters));
 
+        let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
+
+        request(url, (error, data, body) => {
+
+
+            if (!error && data.statusCode === 200) {
+
+                let parsedData = JSON.parse(body);
+
+                let chartTable = h.createChartTable(parsedData);
+
+                res.render('index', { data: parsedData, chartTable: JSON.stringify(chartTable), symbols: symbols });
+
+            } else {
+                console.log(data.statusCode);
+            }
+
+
+
+        });
     }
-
-
-    let url = `http://dev.markitondemand.com/MODApis/Api/v2/InteractiveChart/json?parameters=${parameters}`;
-
-    request(url, (error, data, body) => {
-
-
-        if (!error && data.statusCode === 200) {
-
-            let parsedData = JSON.parse(body);
-
-            let chartTable = h.createChartTable(parsedData);
-
-            res.render('index', { data: parsedData, chartTable: JSON.stringify(chartTable), symbols: symbols });
-
-        } else {
-            console.log(data.statusCode);
-        }
-
-
-
-    });
 })
 
 
 io.on('connection', (socket) => {
     socket.on('add symbol', symb => {
-       
+        console.log(symb)
+
         if (symbols.indexOf(symb.slice(-1).toString()) === -1) {
             symbols = symb;
         }
@@ -96,7 +97,6 @@ io.on('connection', (socket) => {
 
         symbols.splice(symbols.indexOf(symbolToRemove), 1);
         if (symbols.length > 0) {
-            console.log('hello from request')
 
 
             parameters = new h.Parameters(symbols);
@@ -129,19 +129,21 @@ io.on('connection', (socket) => {
 
                 } else {
 
-                   
+
                     console.log(data.statusCode);
                 }
             })
         } else {
-            socket.emit('removeSymbol' , {
-                chart:undefined,
+
+            socket.emit('removeSymbol', {
+                chart: undefined,
                 symbolToRemove: symbolToRemove
             })
             socket.broadcast.emit('removeSymbol', {
-                chart:undefined,
+                chart: undefined,
                 symbolToRemove: symbolToRemove
             })
+          
         }
 
 
